@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuthStore } from '@/lib/store';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
@@ -19,7 +20,9 @@ import {
   Shield,
   CheckCircle,
   XCircle,
-  RefreshCw
+  RefreshCw,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 const LoginPage = () => {
@@ -34,6 +37,7 @@ const LoginPage = () => {
     password: ''
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -224,20 +228,24 @@ const LoginPage = () => {
 
                 {qrCode && qrStatus === 'idle' && (
                   <div className="text-center space-y-4">
-                    <div className="bg-white p-4 rounded-2xl inline-block">
-                      <img 
+                    <div className="bg-white p-4 rounded-2xl inline-block shadow-lg hover:shadow-xl transition-shadow duration-300">
+                      <Image 
                         src={qrCode} 
-                        alt="QR Code" 
+                        alt="QR Code để đăng nhập vào hệ thống Mi Home"
+                        width={192}
+                        height={192}
                         className="w-48 h-48"
+                        priority
                       />
                     </div>
                     <p className="text-slate-300 text-sm">
-                      Quét mã QR bằng ứng dụng Mi Home
+                      Quét mã QR bằng ứng dụng Mi Home để đăng nhập
                     </p>
                     <Button 
                       variant="outline" 
                       onClick={generateQR}
-                      className="text-white border-white/30 hover:bg-white/10"
+                      className="text-white border-white/30 hover:bg-white/10 transition-all duration-300 hover:scale-105"
+                      aria-label="Tạo mã QR mới"
                     >
                       <RefreshCw className="h-4 w-4 mr-2" />
                       Tạo mã mới
@@ -293,20 +301,33 @@ const LoginPage = () => {
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                       <Input
                         id="password"
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         placeholder="Nhập mật khẩu"
                         value={credentials.password}
                         onChange={(e) => setCredentials({...credentials, password: e.target.value})}
-                        className="pl-10 bg-white/10 border-white/30 text-white placeholder:text-slate-400 focus:bg-white/20"
+                        className="pl-10 pr-10 bg-white/10 border-white/30 text-white placeholder:text-slate-400 focus:bg-white/20 transition-all duration-300"
                         required
+                        aria-describedby="password-help"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors duration-300"
+                        aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
                     </div>
+                    <p id="password-help" className="text-xs text-slate-400">
+                      Nhập mật khẩu tài khoản Mi Home của bạn
+                    </p>
                   </div>
 
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
-                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 transition-all duration-300 hover:scale-105 focus:ring-4 focus:ring-blue-500/50"
+                    disabled={loading || !credentials.username || !credentials.password}
+                    aria-describedby="login-status"
                   >
                     {loading ? (
                       <>
@@ -320,6 +341,9 @@ const LoginPage = () => {
                       </>
                     )}
                   </Button>
+                  <p id="login-status" className="sr-only">
+                    {loading ? "Đang xử lý đăng nhập" : "Sẵn sàng đăng nhập"}
+                  </p>
                 </form>
               </TabsContent>
             </Tabs>

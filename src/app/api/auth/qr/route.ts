@@ -116,7 +116,13 @@ async function getIndexData(deviceId: string): Promise<{
       description: errorMsg,
       result: retData.result
     });
-    throw new Error(`Xiaomi API error: ${errorMsg} (code: ${retData.code})`);
+    
+    // Allow code 70016 (login verification failure) to proceed as it still contains needed data
+    if (retData.code === 70016) {
+      console.log('✅ Proceeding with login verification data (code 70016)');
+    } else {
+      throw new Error(`Xiaomi API error: ${errorMsg} (code: ${retData.code})`);
+    }
   }
   
   // Extract required fields - exactly like Python's data.update()
