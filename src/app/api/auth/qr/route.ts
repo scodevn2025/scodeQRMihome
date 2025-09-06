@@ -60,6 +60,7 @@ async function getIndexData(deviceId: string): Promise<{
 }> {
   console.log('🔍 Getting index data from Xiaomi API...');
   console.log('🔧 Device ID:', deviceId);
+  console.log('🌐 Request URL:', MSG_URL);
   
   const response = await fetch(MSG_URL, {
     headers: {
@@ -70,6 +71,9 @@ async function getIndexData(deviceId: string): Promise<{
       'Cookie': `deviceId=${deviceId}; sdkVersion=3.4.1`
     }
   });
+
+  console.log('📥 Response status:', response.status, response.statusText);
+  console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()));
 
   if (!response.ok) {
     throw new Error(`Failed to get index data: ${response.status} - ${response.statusText}`);
@@ -179,10 +183,11 @@ async function getQRLoginUrl(data: {
     'serviceParam': serviceParam,
     '_local': 'zh_CN',
     '_sign': data._sign,
-    '_dc': Math.floor(Date.now()).toString()  // Match Python's int(time.time() * 1000)
+    '_dc': Date.now().toString(),  // Python uses int(time.time() * 1000) which gives milliseconds
   });
 
   console.log('🔗 QR URL params:', Object.fromEntries(params));
+  console.log('🌐 Making QR request to:', `${QR_URL}?${params}`);
 
   const response = await fetch(`${QR_URL}?${params}`, {
     headers: {
@@ -193,6 +198,9 @@ async function getQRLoginUrl(data: {
       'Cookie': `deviceId=${data.deviceId}; sdkVersion=3.4.1`
     }
   });
+
+  console.log('📥 QR Response status:', response.status, response.statusText);
+  console.log('📋 QR Response headers:', Object.fromEntries(response.headers.entries()));
 
   if (!response.ok) {
     throw new Error(`Failed to get QR URL: ${response.status} ${response.statusText}`);
@@ -226,7 +234,9 @@ async function getQRLoginUrl(data: {
     hasLoginUrl: !!retData.loginUrl,
     hasLpUrl: !!retData.lp,
     loginUrlLength: retData.loginUrl?.length,
-    lpUrlLength: retData.lp?.length
+    lpUrlLength: retData.lp?.length,
+    loginUrlPreview: retData.loginUrl?.substring(0, 100) + '...',
+    lpUrlPreview: retData.lp?.substring(0, 100) + '...'
   });
 
   return {
@@ -249,7 +259,6 @@ export async function POST() {
     console.log('⏳ Expires at:', new Date(expiresAt).toISOString());
     
     let qrData;
-    let isRealAPI = true;
     
     try {
       // Try to get real data from Xiaomi API
@@ -267,28 +276,48 @@ export async function POST() {
       console.log('🔗 LP URL length:', qrData.lpUrl?.length);
     } catch (error) {
       console.log('❌ Real Xiaomi API failed:', error);
-      console.warn('⚠️  Falling back to demo mode...');
-      isRealAPI = false;
+      console.error('🔍 Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        isNetworkError: error instanceof Error && error.message.includes('fetch failed'),
+        isDNSError: error instanceof Error && error.message.includes('ENOTFOUND')
+      });
       
-      // Fallback to demo QR code
-      const demoLoginUrl = `https://account.xiaomi.com/pass/serviceLogin?sid=xiaomiio&bizDeviceType=&_qrsize=240&theme=&serviceParam=&_sign=demo_${qrId}&callback=AM.json.cb1&_json=true&needTheme=false&showActiveX=false&_local=zh_CN&_dc=${Date.now()}`;
-      qrData = {
-        loginUrl: demoLoginUrl,
-        lpUrl: null
-      };
-      console.log('🎭 Demo QR URL generated:', demoLoginUrl);
+      // Check if this is a network/DNS issue (common in development environments)
+      if (error instanceof Error && (error.message.includes('ENOTFOUND') || error.message.includes('fetch failed'))) {
+        return NextResponse.json({
+          success: false,
+          error: 'Unable to connect to Xiaomi servers. This is likely due to network restrictions or DNS blocking in this environment. For real QR code generation, ensure the server can access account.xiaomi.com',
+          details: {
+            issue: 'Network connectivity to account.xiaomi.com is blocked',
+            solution: 'Configure network/firewall to allow access to Xiaomi domains',
+            note: 'QR codes generated without real Xiaomi API access will not work with MiHome app'
+          }
+        }, { status: 503 });
+      }
+      
+      // Return error for other types of API failures
+      return NextResponse.json({
+        success: false,
+        error: `Unable to generate authentic QR code: ${error instanceof Error ? error.message : 'Xiaomi API unavailable'}`
+      }, { status: 503 });
     }
     
-    // Generate QR code image
+    // Generate QR code image - match Python QRCode settings exactly
     console.log('🎨 Generating QR code image...');
     const qrUrl = await QRCode.toDataURL(qrData.loginUrl, {
       width: 240,
-      margin: 1,
+      margin: 1,  // Python uses border=1
       color: {
         dark: '#000000',
         light: '#FFFFFF'
       },
-      errorCorrectionLevel: 'M'
+      errorCorrectionLevel: 'M',  // Python QRCode default
+      type: 'image/png',
+      quality: 0.92,
+      rendererOpts: {
+        quality: 0.92
+      }
     });
     console.log('✅ QR code image generated, length:', qrUrl.length);
     
@@ -305,30 +334,8 @@ export async function POST() {
     
     qrSessions.set(qrId, sessionData);
     
-    // If demo mode, auto-confirm after 10 seconds
-    if (!isRealAPI) {
-      console.log('✅ QR code image generated (demo mode), length:', qrUrl.length);
-      console.log('💾 QR session stored (demo mode)');
-      console.log('🎭 Setting up demo mode auto-confirm in 10 seconds...');
-      setTimeout(() => {
-        const session = qrSessions.get(qrId);
-        if (session && session.status === 'pending') {
-          console.log('🎭 Auto-confirming demo QR session:', qrId);
-          session.status = 'confirmed';
-          session.token = `demo_token_${qrId}`;
-          session.user = {
-            id: 'demo_user',
-            username: 'ScodeVN Demo User',
-            avatar: null
-          };
-          qrSessions.set(qrId, session);
-          console.log('✅ Demo session confirmed successfully');
-        }
-      }, 10000);
-    } else {
-      console.log('✅ QR code image generated (real API), length:', qrUrl.length);
-      console.log('💾 QR session stored (real API)');
-    }
+    console.log('✅ QR code image generated (real API), length:', qrUrl.length);
+    console.log('💾 QR session stored (real API)');
     
     const response = {
       success: true,
@@ -337,7 +344,7 @@ export async function POST() {
         qrId,
         expiresAt,
         loginUrl: qrData.loginUrl,
-        isDemo: !isRealAPI
+        isDemo: false  // Always real API now
       }
     };
     
