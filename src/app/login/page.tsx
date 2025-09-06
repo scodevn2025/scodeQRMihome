@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useAuthStore } from '@/lib/store';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
@@ -22,8 +23,12 @@ import {
   XCircle,
   RefreshCw,
   Eye,
-  EyeOff
+  EyeOff,
+  ArrowLeft,
+  Home
 } from 'lucide-react';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 
 const LoginPage = () => {
   const router = useRouter();
@@ -31,7 +36,7 @@ const LoginPage = () => {
   const [qrCode, setQrCode] = useState<string>('');
   const [qrId, setQrId] = useState<string>('');
   const [qrStatus, setQrStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [loginMethod, setLoginMethod] = useState<'qr' | 'credentials'>('qr');
+  const [loginMethod, setLoginMethod] = useState<'qr' | 'credentials'>('credentials');
   const [credentials, setCredentials] = useState({
     username: '',
     password: ''
@@ -129,70 +134,78 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-red-900 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated background */}
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-red-900 flex flex-col relative overflow-hidden">
+      {/* Header */}
+      <Header showLogo={true} />
+      
+      {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Floating orbs */}
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full blur-3xl animate-pulse delay-500"></div>
-      
-        {/* Moving particles */}
-        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-bounce delay-300"></div>
-        <div className="absolute top-3/4 right-1/4 w-3 h-3 bg-pink-300 rounded-full animate-bounce delay-700"></div>
-        <div className="absolute top-1/2 right-1/3 w-1 h-1 bg-blue-300 rounded-full animate-bounce delay-1000"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-2 h-2 bg-yellow-300 rounded-full animate-bounce delay-500"></div>
-      
-        {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-30" style={{
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full blur-3xl opacity-30 animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full blur-3xl opacity-20 animate-pulse delay-500"></div>
+        <div className="absolute inset-0 opacity-20" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
         }}></div>
       </div>
 
-      <div className="relative w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-3xl shadow-2xl mb-6 relative group hover:scale-110 transition-transform duration-300">
-            <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-3xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <Wifi className="h-10 w-10 text-white relative z-10 animate-pulse" />
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center px-4 py-8">
+        <div className="relative w-full max-w-md">
+          {/* Back to Home */}
+          <div className="mb-6">
+            <Link href="/">
+              <Button variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 transition-all duration-300">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Quay về trang chủ
+              </Button>
+            </Link>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent mb-3 animate-slide-up">
-            Smart Control
-          </h1>
-          <p className="text-pink-200 text-lg animate-slide-up delay-200">✨ Quản lý thiết bị thông minh ✨</p>
-        </div>
 
-        <Card className="backdrop-blur-xl bg-white/20 border-white/30 shadow-2xl relative overflow-hidden group hover:bg-white/25 transition-all duration-500">
-          {/* Card glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        
-          <CardHeader className="text-center pb-4 relative z-10">
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300 bg-clip-text text-transparent animate-pulse">
-              🚀 Đăng nhập
-            </CardTitle>
-            <CardDescription className="text-pink-200 text-lg">
-              Chọn phương thức đăng nhập của bạn
-            </CardDescription>
-          </CardHeader>
+          {/* Welcome Section */}
+          <div className="text-center mb-8 animate-fade-in">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-3xl shadow-2xl mb-6 relative group hover:scale-110 transition-transform duration-300">
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-3xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <Wifi className="h-10 w-10 text-white relative z-10 animate-pulse" />
+            </div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent mb-3 animate-slide-up">
+              Chào mừng trở lại! 👋
+            </h1>
+            <p className="text-pink-200 text-lg animate-slide-up delay-200">
+              Đăng nhập để tiếp tục quản lý ngôi nhà thông minh của bạn
+            </p>
+          </div>
 
-          <CardContent>
-            <Tabs value={loginMethod} onValueChange={(value) => setLoginMethod(value as 'qr' | 'credentials')}>
-              <TabsList className="grid w-full grid-cols-2 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-white/20 backdrop-blur-sm">
-                <TabsTrigger 
-                  value="qr" 
-                  className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-purple-500 data-[state=active]:text-white transition-all duration-300 hover:bg-white/10"
-                >
-                  <QrCode className="h-4 w-4 mr-2" />
-                  📱 QR Code
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="credentials" 
-                  className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-blue-500 data-[state=active]:text-white transition-all duration-300 hover:bg-white/10"
-                >
-                  <User className="h-4 w-4 mr-2" />
-                  👤 Tài khoản
-                </TabsTrigger>
-              </TabsList>
+          {/* Login Card */}
+          <Card className="backdrop-blur-xl bg-white/20 border-white/30 shadow-2xl relative overflow-hidden group hover:bg-white/25 transition-all duration-500">
+            <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          
+            <CardHeader className="text-center pb-4 relative z-10">
+              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300 bg-clip-text text-transparent animate-pulse">
+                🚀 Đăng nhập hệ thống
+              </CardTitle>
+              <CardDescription className="text-pink-200 text-lg">
+                Chọn phương thức phù hợp với bạn
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="relative z-10">
+              <Tabs value={loginMethod} onValueChange={(value) => setLoginMethod(value as 'qr' | 'credentials')}>
+                <TabsList className="grid w-full grid-cols-2 bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-white/20 backdrop-blur-sm">
+                  <TabsTrigger 
+                    value="credentials" 
+                    className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-blue-500 data-[state=active]:text-white transition-all duration-300 hover:bg-white/10"
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    👤 Tài khoản
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="qr" 
+                    className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-purple-500 data-[state=active]:text-white transition-all duration-300 hover:bg-white/10"
+                  >
+                    <QrCode className="h-4 w-4 mr-2" />
+                    📱 QR Code
+                  </TabsTrigger>
+                </TabsList>
 
               {/* QR Code Login */}
               <TabsContent value="qr" className="space-y-6 mt-6">
@@ -278,66 +291,83 @@ const LoginPage = () => {
 
               {/* Credentials Login */}
               <TabsContent value="credentials" className="space-y-6 mt-6">
-                <form onSubmit={handleCredentialLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="username" className="text-white">Tên đăng nhập</Label>
+                <div className="text-center mb-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-2xl mb-4">
+                    <Shield className="h-8 w-8 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-white mb-2">
+                    🔐 Đăng nhập an toàn
+                  </h3>
+                  <p className="text-slate-300 text-sm">
+                    Sử dụng thông tin tài khoản Mi Home để truy cập
+                  </p>
+                </div>
+
+                <form onSubmit={handleCredentialLogin} className="space-y-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="username" className="text-white font-medium">Tên đăng nhập</Label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input
                         id="username"
                         type="text"
-                        placeholder="Nhập tên đăng nhập"
+                        placeholder="Nhập tên đăng nhập hoặc email"
                         value={credentials.username}
                         onChange={(e) => setCredentials({...credentials, username: e.target.value})}
-                        className="pl-10 bg-white/10 border-white/30 text-white placeholder:text-slate-400 focus:bg-white/20"
+                        className="pl-11 h-12 bg-white/10 border-white/30 text-white placeholder:text-slate-400 focus:bg-white/20 focus:border-cyan-400 transition-all duration-300 rounded-xl"
                         required
+                        aria-describedby="username-help"
                       />
                     </div>
+                    <p id="username-help" className="text-xs text-slate-400">
+                      Sử dụng email hoặc số điện thoại đã đăng ký với Mi Home
+                    </p>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-white">Mật khẩu</Label>
+                  <div className="space-y-3">
+                    <Label htmlFor="password" className="text-white font-medium">Mật khẩu</Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
-                        placeholder="Nhập mật khẩu"
+                        placeholder="Nhập mật khẩu của bạn"
                         value={credentials.password}
                         onChange={(e) => setCredentials({...credentials, password: e.target.value})}
-                        className="pl-10 pr-10 bg-white/10 border-white/30 text-white placeholder:text-slate-400 focus:bg-white/20 transition-all duration-300"
+                        className="pl-11 pr-12 h-12 bg-white/10 border-white/30 text-white placeholder:text-slate-400 focus:bg-white/20 focus:border-cyan-400 transition-all duration-300 rounded-xl"
                         required
                         aria-describedby="password-help"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors duration-300"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors duration-300 p-1 rounded-lg hover:bg-white/10"
                         aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
                     </div>
                     <p id="password-help" className="text-xs text-slate-400">
-                      Nhập mật khẩu tài khoản Mi Home của bạn
+                      Mật khẩu tài khoản Mi Home của bạn (phân biệt hoa thường)
                     </p>
                   </div>
 
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 transition-all duration-300 hover:scale-105 focus:ring-4 focus:ring-blue-500/50"
+                    className="w-full h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:ring-4 focus:ring-blue-500/50 relative overflow-hidden group"
                     disabled={loading || !credentials.username || !credentials.password}
                     aria-describedby="login-status"
                   >
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                     {loading ? (
                       <>
-                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                        Đang đăng nhập...
+                        <RefreshCw className="h-5 w-5 mr-2 animate-spin relative z-10" />
+                        <span className="relative z-10">Đang xử lý...</span>
                       </>
                     ) : (
                       <>
-                        <Shield className="h-4 w-4 mr-2" />
-                        Đăng nhập
+                        <Shield className="h-5 w-5 mr-2 relative z-10" />
+                        <span className="relative z-10">🚀 Đăng nhập ngay</span>
                       </>
                     )}
                   </Button>
@@ -345,19 +375,52 @@ const LoginPage = () => {
                     {loading ? "Đang xử lý đăng nhập" : "Sẵn sàng đăng nhập"}
                   </p>
                 </form>
+
+                {/* Additional Options */}
+                <div className="text-center space-y-4">
+                  <div className="flex items-center justify-center space-x-1 text-slate-400 text-sm">
+                    <span>Chưa có tài khoản?</span>
+                    <a href="https://account.xiaomi.com/pass/register" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 transition-colors duration-300 font-medium">
+                      Đăng ký Mi Home
+                    </a>
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    Bằng việc đăng nhập, bạn đồng ý với điều khoản sử dụng của chúng tôi
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
 
-        {/* Footer */}
-        <div className="text-center mt-8">
-          <p className="text-slate-400 text-sm">
-            © 2024 Smart Control. Được phát triển bởi ScodeVN
+        {/* Additional Info */}
+        <div className="text-center mt-8 space-y-4">
+          <div className="flex items-center justify-center space-x-6">
+            <div className="flex items-center space-x-2 text-slate-300">
+              <Shield className="h-4 w-4 text-green-400" />
+              <span className="text-sm">Mã hóa SSL</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <QrCode className="h-4 w-4 text-blue-400" />
+              <span className="text-sm">Xác thực 2FA</span>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-300">
+              <Wifi className="h-4 w-4 text-purple-400" />
+              <span className="text-sm">Kết nối an toàn</span>
+            </div>
+          </div>
+          
+          <p className="text-slate-400 text-xs max-w-lg mx-auto leading-relaxed">
+            Hệ thống sử dụng giao thức mã hóa end-to-end để bảo vệ thông tin đăng nhập và dữ liệu cá nhân của bạn. 
+            Tất cả thông tin được truyền tải qua kênh bảo mật SSL/TLS.
           </p>
         </div>
       </div>
     </div>
+
+    {/* Footer */}
+    <Footer />
+  </div>
   );
 };
 
