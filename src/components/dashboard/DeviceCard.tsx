@@ -152,8 +152,14 @@ const DeviceCard: React.FC<DeviceCardProps> = ({
                 checked={isPowerOn}
                 onCheckedChange={async (checked) => {
                   setLoading(true);
-                  await onToggle?.(device.id, checked);
-                  setTimeout(() => setLoading(false), 500);
+                  try {
+                    await onToggle?.(device.id, checked);
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                    setLoading(false);
+                  }
                 }}
                 disabled={!device.online || loading}
               />
@@ -196,11 +202,14 @@ const DeviceCard: React.FC<DeviceCardProps> = ({
         {/* Action buttons */}
         <div className="flex space-x-2 pt-2">
           <Button
-            size="sm"
-            variant="outline"
-            className="flex-1 text-xs transition-all duration-200 hover:bg-pink-100 dark:hover:bg-pink-900/30 focus:ring-2 focus:ring-pink-400"
             onClick={async () => {
               setLoading(true);
+              try {
+                await onControl?.(device.id, {});
+              } finally {
+                setLoading(false);
+              }
+            }}
               await onControl?.(device.id, {});
               setTimeout(() => setLoading(false), 500);
             }}

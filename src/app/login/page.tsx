@@ -97,8 +97,11 @@ const LoginPage = () => {
         'user' in response.data
       ) {
         toast.success('Đăng nhập thành công!');
-        // @ts-expect-error: mijiaSession may not exist on QRStatusResponse
-        await login(response.data.token, response.data.user, (response.data as any).mijiaSession);
+        await login(
+          response.data.token,
+          response.data.user,
+          response.data.mijiaSession // Now properly typed
+        );
         router.push('/dashboard');
       } else {
         toast.error(response.error || 'Đăng nhập thất bại');
