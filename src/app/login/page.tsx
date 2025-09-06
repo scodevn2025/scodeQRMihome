@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -10,10 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  QrCode, 
-  User, 
-  Lock, 
+import {
+  QrCode,
+  User,
+  Lock,
   Smartphone,
   Wifi,
   Shield,
@@ -44,8 +44,8 @@ const LoginPage = () => {
     setQrStatus('loading');
     try {
       const response = await apiClient.generateQR();
-      if (response.success && response.data?.qrCode) {
-        setQrCode(response.data.qrCode);
+      if (response.success && response.data?.qrUrl) {
+        setQrCode(response.data.qrUrl);
         setQrStatus('idle');
         checkQRStatus();
       } else {
@@ -65,7 +65,9 @@ const LoginPage = () => {
         if (response.data?.status === 'confirmed') {
           setQrStatus('success');
           toast.success('Đăng nhập thành công!');
-          await login(response.data, '');
+          if (response.data.token && response.data.user) {
+            await login(response.data.token, response.data.user);
+          }
           router.push('/dashboard');
         } else if (response.data?.status === 'expired') {
           setQrStatus('error');
@@ -84,12 +86,19 @@ const LoginPage = () => {
   const handleCredentialLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+  
     try {
       const response = await apiClient.loginWithCredentials(credentials.username, credentials.password);
-      if (response.success) {
+      if (
+        response.success &&
+        response.data &&
+        typeof response.data === 'object' &&
+        'token' in response.data &&
+        'user' in response.data
+      ) {
         toast.success('Đăng nhập thành công!');
-        await login(response.data, '');
+        // @ts-expect-error: mijiaSession may not exist on QRStatusResponse
+        await login(response.data.token, response.data.user, (response.data as any).mijiaSession);
         router.push('/dashboard');
       } else {
         toast.error(response.error || 'Đăng nhập thất bại');
@@ -110,13 +119,13 @@ const LoginPage = () => {
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full blur-3xl animate-pulse delay-1000"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full blur-3xl animate-pulse delay-500"></div>
-        
+      
         {/* Moving particles */}
         <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full animate-bounce delay-300"></div>
         <div className="absolute top-3/4 right-1/4 w-3 h-3 bg-pink-300 rounded-full animate-bounce delay-700"></div>
         <div className="absolute top-1/2 right-1/3 w-1 h-1 bg-blue-300 rounded-full animate-bounce delay-1000"></div>
         <div className="absolute bottom-1/4 left-1/3 w-2 h-2 bg-yellow-300 rounded-full animate-bounce delay-500"></div>
-        
+      
         {/* Grid pattern */}
         <div className="absolute inset-0 opacity-30" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
@@ -139,7 +148,7 @@ const LoginPage = () => {
         <Card className="backdrop-blur-xl bg-white/20 border-white/30 shadow-2xl relative overflow-hidden group hover:bg-white/25 transition-all duration-500">
           {/* Card glow effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
+        
           <CardHeader className="text-center pb-4 relative z-10">
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300 bg-clip-text text-transparent animate-pulse">
               🚀 Đăng nhập
@@ -174,7 +183,8 @@ const LoginPage = () => {
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-2xl mb-4">
                     <Smartphone className="h-8 w-8 text-white" />
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">Đăng nhập bằng QR Code</h3>
+                  <h3 className="text-lg font-semibold text-white mb-2">
+                    Đăng nhập bằng QR Code</h3>
                   <p className="text-slate-300 text-sm mb-6">
                     Quét mã QR bằng ứng dụng Mi Home để đăng nhập
                   </p>
@@ -194,7 +204,8 @@ const LoginPage = () => {
                 {qrStatus === 'loading' && (
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-                    <p className="text-slate-300">Đang tạo mã QR...</p>
+                    <p className="text-slate-300">
+                      Đang tạo mã QR...</p>
                   </div>
                 )}
 
@@ -224,7 +235,8 @@ const LoginPage = () => {
                 {qrStatus === 'success' && (
                   <div className="text-center">
                     <CheckCircle className="h-12 w-12 text-green-400 mx-auto mb-4" />
-                    <p className="text-green-400 font-medium">Đăng nhập thành công!</p>
+                    <p className="text-green-400 font-medium">
+                      Đăng nhập thành công!</p>
                   </div>
                 )}
 

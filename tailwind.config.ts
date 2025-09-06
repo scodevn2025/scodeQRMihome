@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 const config: Config = {
@@ -9,77 +10,72 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      spacing: {
-        '0': '0px',
-        '1': '0.25rem',
-        '2': '0.5rem',
-        '3': '0.75rem',
-        '4': '1rem',
-        '5': '1.25rem',
-        '6': '1.5rem',
-        '7': '1.75rem',
-        '8': '2rem',
-        '9': '2.25rem',
-        '10': '2.5rem',
-        '11': '2.75rem',
-        '12': '3rem',
-        '14': '3.5rem',
-        '16': '4rem',
-        '20': '5rem',
-        '24': '6rem',
-        '28': '7rem',
-        '32': '8rem',
-        '36': '9rem',
-        '40': '10rem',
-        '44': '11rem',
-        '48': '12rem',
-        '52': '13rem',
-        '56': '14rem',
-        '60': '15rem',
-        '64': '16rem',
-        '72': '18rem',
-        '80': '20rem',
-        '96': '24rem',
-      },
       colors: {
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
+        'cyber-primary': '#00fff7',
+        'cyber-secondary': '#ff00ff',
+        'cyber-accent': '#00ff41',
+        'cyber-warning': '#ffff00',
+        'cyber-danger': '#ff0040',
+        'cyber-dark': '#0a0a0a',
+        'cyber-darker': '#050505',
+        'cyber-gray': '#1a1a1a',
+        'cyber-light-gray': '#2a2a2a',
+        'cyber-text': '#e0e0e0',
+        'cyber-text-dim': '#a0a0a0',
+        background: "#10111a",
+        foreground: "#e0eaff",
+        card: "#181a24",
+        'card-foreground': "#e0eaff",
+        primary: "#00fff7",
+        'primary-foreground': "#10111a",
+        secondary: "#7f00ff",
+        'secondary-foreground': "#fff",
+        accent: "#ff00ff",
+        'accent-foreground': "#fff",
+        destructive: "#ff0040",
+        'destructive-foreground': "#fff",
+        border: "#00fff7",
+        input: "#181a24",
+        ring: "#00fff7",
+      },
+      fontFamily: {
+        orbitron: [
+          'Orbitron',
+          'monospace'
+        ],
+        rajdhani: [
+          'Rajdhani',
+          'sans-serif'
+        ]
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "1.25rem",
+        md: "1rem",
+        sm: "0.75rem",
+      },
+      boxShadow: {
+        'cyberpunk-glow': '0 0 12px 2px #00fff7, 0 0 32px 4px #7f00ff33',
+      },
+      animation: {
+        'cyberpunk-glow': 'cyberpunk-glow 2s ease-in-out infinite',
+        'fade-in-up': 'fade-in-up 0.6s ease-out forwards',
+        'glassmove': 'glassmove 8s ease-in-out infinite',
+      },
+      keyframes: {
+        'cyberpunk-glow': {
+          '0%': { boxShadow: '0 0 8px #00fff7, 0 0 24px #7f00ff33' },
+          '50%': { boxShadow: '0 0 24px #7f00ff, 0 0 48px #00fff7' },
+          '100%': { boxShadow: '0 0 8px #00fff7, 0 0 24px #7f00ff33' },
+        },
+        'fade-in-up': {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'glassmove': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
+        },
       },
     },
   },
