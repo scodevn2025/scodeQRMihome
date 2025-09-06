@@ -222,7 +222,7 @@ export async function POST() {
       isRealAPI = false;
       
       // Fallback to demo QR code
-      const demoLoginUrl = `mijia://login?qr_id=${qrId}&timestamp=${Date.now()}&demo=true`;
+      const demoLoginUrl = `https://account.xiaomi.com/pass/serviceLogin?sid=xiaomiio&bizDeviceType=&_qrsize=240&theme=&serviceParam=&_sign=demo_${qrId}&callback=AM.json.cb1&_json=true&needTheme=false&showActiveX=false&_local=zh_CN&_dc=${Date.now()}`;
       qrData = {
         loginUrl: demoLoginUrl,
         lpUrl: null
@@ -233,12 +233,13 @@ export async function POST() {
     // Generate QR code image
     console.log('🎨 Generating QR code image...');
     const qrUrl = await QRCode.toDataURL(qrData.loginUrl, {
-      width: 256,
-      margin: 2,
+      width: 240,
+      margin: 1,
       color: {
         dark: '#000000',
         light: '#FFFFFF'
-      }
+      },
+      errorCorrectionLevel: 'M'
     });
     console.log('✅ QR code image generated, length:', qrUrl.length);
     
