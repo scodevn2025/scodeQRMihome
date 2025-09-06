@@ -102,7 +102,7 @@ class ApiClient {
       
       if (response.success && response.data) {
         // Chuyển đổi dữ liệu từ Mijia API sang format của ứng dụng
-        const devices: Device[] = response.data.map((device: any) => ({
+        const devices: Device[] = response.data.map((device: Record<string, unknown>) => ({
           id: device.did || device.id,
           name: device.name || 'Unknown Device',
           type: this.mapDeviceType(device.model),
@@ -173,7 +173,7 @@ class ApiClient {
     return 'unknown';
   }
 
-  async getHomes(): Promise<ApiResponse<any[]>> {
+  async getHomes(): Promise<ApiResponse<Record<string, unknown>[]>> {
     console.log('🔍 API Client: Getting homes from Mijia API...');
     try {
       const response = await mijiaAPI.get_homes_list();
@@ -212,7 +212,7 @@ class ApiClient {
     }
   }
 
-  async getScenes(homeId: string): Promise<ApiResponse<any[]>> {
+  async getScenes(homeId: string): Promise<ApiResponse<Record<string, unknown>[]>> {
     console.log('🔍 API Client: Getting scenes for home:', homeId);
     try {
       const response = await mijiaAPI.get_scenes_list(homeId);
@@ -282,7 +282,7 @@ class ApiClient {
     }
   }
 
-  async getDeviceProperties(deviceId: string): Promise<ApiResponse<any>> {
+  async getDeviceProperties(deviceId: string): Promise<ApiResponse<Record<string, unknown>>> {
     console.log('🔍 API Client: Getting device properties for:', deviceId);
     try {
       const response = await mijiaAPI.get_devices_prop({ did: deviceId });
@@ -317,7 +317,7 @@ class ApiClient {
     }
   }
 
-  async updateDevice(deviceId: string, properties: Record<string, any>): Promise<ApiResponse> {
+  async updateDevice(deviceId: string, properties: Record<string, unknown>): Promise<ApiResponse> {
     console.log('🔍 API Client: Updating device:', deviceId, properties);
     try {
       const response = await mijiaAPI.update_device({

@@ -80,7 +80,7 @@ export class MijiaAuth {
     }
   }
 
-  private async getCaptcha(): Promise<{ success: boolean; captcha?: any; error?: string }> {
+  private async getCaptcha(): Promise<{ success: boolean; captcha?: Record<string, unknown>; error?: string }> {
     try {
       const response = await fetch(`${this.baseUrl}/pass/serviceLoginAuth2`, {
         method: 'POST',
@@ -104,7 +104,7 @@ export class MijiaAuth {
     }
   }
 
-  private async performLogin(username: string, password: string, captcha: any): Promise<{ success: boolean; token?: string; user_id?: string; user_name?: string; user_avatar?: string; error?: string }> {
+  private async performLogin(username: string, password: string, captcha: Record<string, unknown>): Promise<{ success: boolean; token?: string; user_id?: string; user_name?: string; user_avatar?: string; error?: string }> {
     try {
       const response = await fetch(`${this.baseUrl}/pass/serviceLoginAuth2`, {
         method: 'POST',

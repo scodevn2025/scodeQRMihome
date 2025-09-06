@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuthStore } from '@/lib/store';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api';
@@ -9,7 +10,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   QrCode, 
@@ -53,7 +53,7 @@ const LoginPage = () => {
         setQrStatus('error');
         toast.error('Không thể tạo mã QR');
       }
-    } catch (error) {
+    } catch {
       setQrStatus('error');
       toast.error('Lỗi khi tạo mã QR');
     }
@@ -76,7 +76,7 @@ const LoginPage = () => {
           setTimeout(checkQRStatus, 2000);
         }
       }
-    } catch (error) {
+    } catch {
       setQrStatus('error');
       toast.error('Lỗi khi kiểm tra trạng thái QR');
     }
@@ -95,7 +95,7 @@ const LoginPage = () => {
       } else {
         toast.error(response.error || 'Đăng nhập thất bại');
       }
-    } catch (error) {
+    } catch {
       toast.error('Lỗi khi đăng nhập');
     } finally {
       setLoading(false);
@@ -174,9 +174,11 @@ const LoginPage = () => {
                 {qrCode && qrStatus === 'idle' && (
                   <div className="text-center space-y-4">
                     <div className="bg-white p-4 rounded-2xl inline-block">
-                      <img 
+                      <Image 
                         src={qrCode} 
                         alt="QR Code" 
+                        width={192}
+                        height={192}
                         className="w-48 h-48"
                       />
                     </div>

@@ -9,7 +9,6 @@ import {
   Settings, 
   LogOut, 
   Wifi, 
-  Users, 
   Zap,
   BarChart3,
   Shield,

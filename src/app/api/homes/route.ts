@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { mijiaAPI } from '@/lib/mijia';
 
 export async function GET() {

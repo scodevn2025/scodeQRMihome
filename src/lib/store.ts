@@ -8,8 +8,8 @@ interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  mijiaSession: any | null;
-  login: (token: string, user: User, mijiaSession?: any) => void;
+  mijiaSession: Record<string, unknown> | null;
+  login: (token: string, user: User, mijiaSession?: Record<string, unknown>) => void;
   logout: () => void;
 }
 
@@ -18,7 +18,7 @@ interface DeviceState {
   loading: boolean;
   error: string | null;
   fetchDevices: () => Promise<void>;
-  updateDevice: (deviceId: string, properties: Record<string, any>) => Promise<void>;
+  updateDevice: (deviceId: string, properties: Record<string, unknown>) => Promise<void>;
   setError: (error: string | null) => void;
 }
 
@@ -29,7 +29,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
       mijiaSession: null,
-      login: (token: string, user: User, mijiaSession?: any) => {
+      login: (token: string, user: User, mijiaSession?: Record<string, unknown>) => {
         const userWithSession = { ...user, mijiaSession };
         set({ token, user: userWithSession, isAuthenticated: true, mijiaSession });
         // Set session for Mijia API
@@ -68,7 +68,7 @@ export const useDeviceStore = create<DeviceState>()((set, get) => ({
     }
   },
   
-  updateDevice: async (deviceId: string, properties: Record<string, any>) => {
+  updateDevice: async (deviceId: string, properties: Record<string, unknown>) => {
     try {
       const response = await apiClient.updateDevice(deviceId, properties);
       if (response.success) {

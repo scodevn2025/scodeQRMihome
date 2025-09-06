@@ -201,12 +201,12 @@ export class MijiaDeviceWrapper {
   }
 
   // Get all properties
-  getProperties(): Record<string, any> {
+  getProperties(): Record<string, unknown> {
     return { ...this.device.properties };
   }
 
   // Set multiple properties at once
-  async setProperties(properties: Record<string, any>): Promise<boolean> {
+  async setProperties(properties: Record<string, unknown>): Promise<boolean> {
     Object.assign(this.device.properties, properties);
     return await this.save();
   }

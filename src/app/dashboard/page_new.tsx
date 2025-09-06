@@ -9,26 +9,18 @@ import Layout from '@/components/layout/Layout';
 import StatsCard from '@/components/dashboard/StatsCard';
 import DeviceCard from '@/components/dashboard/DeviceCard';
 import SceneCard from '@/components/dashboard/SceneCard';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
-  Home, 
   Wifi, 
   WifiOff, 
-  LogOut,
-  Settings,
-  Play,
   RefreshCw,
   Zap,
   Users,
-  Shield,
-  TrendingUp,
-  Activity,
-  Clock,
-  Battery
+  Activity
 } from 'lucide-react';
 
 const DashboardPage = () => {

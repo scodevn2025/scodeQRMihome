@@ -19,7 +19,7 @@ export interface MijiaDevice {
   type: string;
   model: string;
   online: boolean;
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
   home_id: string;
   room_id?: string;
   capabilities?: string[];
@@ -43,7 +43,7 @@ export interface MijiaScene {
 export interface MijiaSceneAction {
   device_id: string;
   action: string;
-  params: any[];
+  params: unknown[];
 }
 
 export interface MijiaLoginOptions {
@@ -54,16 +54,16 @@ export interface MijiaLoginOptions {
 
 export interface MijiaDeviceUpdate {
   device_id: string;
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
 }
 
 export interface MijiaDeviceAction {
   device_id: string;
   action: string;
-  params: any[];
+  params: unknown[];
 }
 
-export interface MijiaAPIResponse<T = any> {
+export interface MijiaAPIResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

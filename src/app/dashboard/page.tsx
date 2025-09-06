@@ -26,7 +26,7 @@ import { Device } from '@/types';
 
 const DashboardPage = () => {
   const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const { 
     devices, 
     loading, 

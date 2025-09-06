@@ -12,11 +12,11 @@ interface DeviceControlModalProps {
   device: Device;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (properties: Record<string, any>) => void;
+  onSubmit: (properties: Record<string, unknown>) => void;
 }
 
 const DeviceControlModal: React.FC<DeviceControlModalProps> = ({ device, isOpen, onClose, onSubmit }) => {
-  const [currentProperties, setCurrentProperties] = useState<Record<string, any>>({});
+  const [currentProperties, setCurrentProperties] = useState<Record<string, unknown>>({});
 
   useEffect(() => {
     if (isOpen) {
@@ -24,7 +24,7 @@ const DeviceControlModal: React.FC<DeviceControlModalProps> = ({ device, isOpen,
     }
   }, [isOpen, device.properties]);
 
-  const handleChange = (key: string, value: any) => {
+  const handleChange = (key: string, value: unknown) => {
     setCurrentProperties(prev => ({
       ...prev,
       [key]: value

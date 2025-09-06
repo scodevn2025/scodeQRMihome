@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { Device } from '@/types';
 import { mijiaAPI } from '@/lib/mijia';
 
@@ -9,7 +9,7 @@ export async function GET() {
     
     if (response.success && response.data) {
       // Chuyển đổi dữ liệu từ Mijia format sang format của app
-      const devices: Device[] = response.data.map((device: any) => ({
+      const devices: Device[] = response.data.map((device: Record<string, unknown>) => ({
         id: device.id,
         name: device.name,
         type: device.type || 'other',

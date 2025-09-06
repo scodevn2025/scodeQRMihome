@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Search, Bell, Settings, User, Menu } from 'lucide-react';
+import { Search, Bell, Settings, User, Menu, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
