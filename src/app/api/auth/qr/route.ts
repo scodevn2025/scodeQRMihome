@@ -73,7 +73,35 @@ async function getIndexData(deviceId: string): Promise<{
   }
 
   const text = await response.text();
-  const retData = JSON.parse(text.substring(11)); // Remove callback wrapper
+  console.log('🔍 Attempting to get real Xiaomi QR URL...');
+  console.log('📄 Index response length:', text.length);
+  console.log('🔍 Raw response preview:', text.substring(0, 200));
+  
+  // Parse JSON with proper error handling
+  let retData;
+  try {
+    // Handle different response formats
+    if (text.startsWith('&&&START&&&')) {
+      console.log('🔍 JSON match result: Found &&&START&&&');
+      retData = JSON.parse(text.substring(11));
+    } else {
+      console.log('🔍 JSON match result: Not found');
+      retData = JSON.parse(text);
+    }
+  } catch (parseError) {
+    console.log('❌ Failed to parse JSON response, full response:', text);
+    throw new Error('Failed to parse index response');
+  }
+
+  // Check if the API returned an error
+  if (retData.code !== 0) {
+    console.log('❌ Xiaomi API returned error:', {
+      code: retData.code,
+      description: retData.description || retData.desc,
+      result: retData.result
+    });
+    throw new Error(`Xiaomi API error: ${retData.description || retData.desc || 'Unknown error'} (code: ${retData.code})`);
+  }
   
   return {
     deviceId,
@@ -175,7 +203,6 @@ export async function POST() {
     let isRealAPI = true;
     
     try {
-      console.log('🌐 Attempting to get real data from Xiaomi API...');
       // Try to get real data from Xiaomi API
       const indexData = await getIndexData(deviceId);
       console.log('✅ Index data retrieved:', {
@@ -190,11 +217,8 @@ export async function POST() {
       console.log('🔗 Login URL length:', qrData.loginUrl?.length);
       console.log('🔗 LP URL length:', qrData.lpUrl?.length);
     } catch (error) {
-      console.warn('❌ Xiaomi API failed, using demo mode');
-      console.error('🔍 Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
-      });
+      console.log('❌ Real Xiaomi API failed:', error);
+      console.warn('⚠️  Falling back to demo mode...');
       isRealAPI = false;
       
       // Fallback to demo QR code
@@ -230,17 +254,11 @@ export async function POST() {
     };
     
     qrSessions.set(qrId, sessionData);
-    console.log('💾 QR session stored:', {
-      qrId,
-      deviceId,
-      hasLoginUrl: !!qrData.loginUrl,
-      hasLpUrl: !!qrData.lpUrl,
-      isRealAPI,
-      sessionCount: qrSessions.size
-    });
     
     // If demo mode, auto-confirm after 10 seconds
     if (!isRealAPI) {
+      console.log('✅ QR code image generated (demo mode), length:', qrUrl.length);
+      console.log('💾 QR session stored (demo mode)');
       console.log('🎭 Setting up demo mode auto-confirm in 10 seconds...');
       setTimeout(() => {
         const session = qrSessions.get(qrId);
@@ -257,6 +275,9 @@ export async function POST() {
           console.log('✅ Demo session confirmed successfully');
         }
       }, 10000);
+    } else {
+      console.log('✅ QR code image generated (real API), length:', qrUrl.length);
+      console.log('💾 QR session stored (real API)');
     }
     
     const response = {

@@ -98,7 +98,7 @@
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "/workspaces/scodeQRMihome",
+    "outputFileTracingRoot": "/home/runner/work/scodeQRMihome/scodeQRMihome",
     "experimental": {
       "useSkewCookie": false,
       "cacheLife": {
@@ -157,7 +157,7 @@
       "middlewarePrefetch": "flexible",
       "optimisticClientCache": true,
       "manualClientBasePath": false,
-      "cpus": 1,
+      "cpus": 3,
       "memoryBasedWorkersCount": false,
       "imgOptConcurrency": null,
       "imgOptTimeoutInSeconds": 7,
@@ -287,10 +287,10 @@
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.ts",
     "turbopack": {
-      "root": "/workspaces/scodeQRMihome"
+      "root": "/home/runner/work/scodeQRMihome/scodeQRMihome"
     }
   },
-  "appDir": "/workspaces/scodeQRMihome",
+  "appDir": "/home/runner/work/scodeQRMihome/scodeQRMihome",
   "relativeAppDir": "",
   "files": [
     ".next/routes-manifest.json",
