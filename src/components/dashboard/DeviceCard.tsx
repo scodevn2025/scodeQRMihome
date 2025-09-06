@@ -35,14 +35,17 @@ interface DeviceCardProps {
   onToggle?: (deviceId: string, state: boolean) => void;
   onControl?: (deviceId: string, properties: Record<string, unknown>) => void;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 const DeviceCard: React.FC<DeviceCardProps> = ({
   device,
   onToggle,
   onControl,
-  className
+  className,
+  style
 }) => {
+  const [loading, setLoading] = React.useState(false);
   const getDeviceIcon = (type: string) => {
     const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
       'light': Lightbulb,
@@ -83,11 +86,15 @@ const DeviceCard: React.FC<DeviceCardProps> = ({
   const isPowerOn = Boolean(device.properties?.power || device.properties?.on);
 
   return (
-    <Card className={cn(
-      "group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-105 cursor-pointer",
-      getStatusColor(device.online),
-      className
-    )}>
+    <Card
+      className={cn(
+        "group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-105 cursor-pointer focus:ring-2 focus:ring-pink-400 dark:bg-slate-900 dark:text-slate-100",
+        getStatusColor(device.online),
+        className
+      )}
+      style={style}
+      tabIndex={0}
+    >
       {/* Animated background */}
       <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
       
@@ -137,46 +144,50 @@ const DeviceCard: React.FC<DeviceCardProps> = ({
         {/* Power control */}
         {device.type === 'light' || device.type === 'switch' ? (
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-700">
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
               {isPowerOn ? 'Bật' : 'Tắt'}
             </span>
-            <Switch
-              checked={isPowerOn}
-              onCheckedChange={(checked) => onToggle?.(device.id, checked)}
-              disabled={!device.online}
-            />
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={isPowerOn}
+                onCheckedChange={async (checked) => {
+                  setLoading(true);
+                  await onToggle?.(device.id, checked);
+                  setTimeout(() => setLoading(false), 500);
+                }}
+                disabled={!device.online || loading}
+              />
+              {loading && <span className="animate-spin h-4 w-4 border-b-2 border-pink-500 rounded-full"></span>}
+            </div>
           </div>
         ) : null}
 
         {/* Device properties */}
         <div className="space-y-2">
-          {device.properties?.brightness && typeof device.properties.brightness === 'number' && (
+          {typeof device.properties?.brightness === 'number' && (
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-600">Độ sáng</span>
-              <span className="font-medium">{device.properties.brightness}%</span>
+              <span className="font-medium">{device.properties.brightness as number}%</span>
             </div>
           )}
-          
-          {device.properties?.temperature && typeof device.properties.temperature === 'number' && (
+          {typeof device.properties?.temperature === 'number' && (
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-600">Nhiệt độ</span>
-              <span className="font-medium">{device.properties.temperature}°C</span>
+              <span className="font-medium">{device.properties.temperature as number}°C</span>
             </div>
           )}
-          
-          {device.properties?.humidity && typeof device.properties.humidity === 'number' && (
+          {typeof device.properties?.humidity === 'number' && (
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-600">Độ ẩm</span>
-              <span className="font-medium">{device.properties.humidity}%</span>
+              <span className="font-medium">{device.properties.humidity as number}%</span>
             </div>
           )}
-          
-          {device.properties?.battery && typeof device.properties.battery === 'number' && (
+          {typeof device.properties?.battery === 'number' && (
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-600">Pin</span>
               <div className="flex items-center space-x-1">
                 <Battery className="h-3 w-3" />
-                <span className="font-medium">{device.properties.battery}%</span>
+                <span className="font-medium">{device.properties.battery as number}%</span>
               </div>
             </div>
           )}
@@ -187,12 +198,16 @@ const DeviceCard: React.FC<DeviceCardProps> = ({
           <Button
             size="sm"
             variant="outline"
-            className="flex-1 text-xs"
-            onClick={() => onControl?.(device.id, {})}
-            disabled={!device.online}
+            className="flex-1 text-xs transition-all duration-200 hover:bg-pink-100 dark:hover:bg-pink-900/30 focus:ring-2 focus:ring-pink-400"
+            onClick={async () => {
+              setLoading(true);
+              await onControl?.(device.id, {});
+              setTimeout(() => setLoading(false), 500);
+            }}
+            disabled={!device.online || loading}
           >
             <Settings className="h-3 w-3 mr-1" />
-            Điều khiển
+            {loading ? 'Đang xử lý...' : 'Điều khiển'}
           </Button>
         </div>
       </CardContent>

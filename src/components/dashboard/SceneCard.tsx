@@ -64,11 +64,11 @@ const SceneCard: React.FC<SceneCardProps> = ({
 
   return (
     <Card className={cn(
-      "group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1",
+      "group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:scale-105 cursor-pointer focus:ring-2 focus:ring-purple-400 dark:bg-slate-900 dark:text-slate-100 animate-fade-in-up",
       getSceneColor(scene.type),
       className
-    )}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+    )} tabIndex={0}>
+  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <div className="flex items-center space-x-3">
           <div className={cn(
             "flex h-10 w-10 items-center justify-center rounded-lg",
@@ -77,11 +77,11 @@ const SceneCard: React.FC<SceneCardProps> = ({
             <Icon className="h-5 w-5" />
           </div>
           <div className="flex-1">
-            <CardTitle className="text-sm font-semibold text-slate-900">
+            <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-100">
               {scene.name}
             </CardTitle>
             {scene.description && (
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-slate-500 dark:text-slate-300 mt-1">
                 {scene.description}
               </p>
             )}
@@ -91,7 +91,7 @@ const SceneCard: React.FC<SceneCardProps> = ({
         <div className="flex items-center space-x-2">
           <Badge 
             variant={scene.enabled ? "default" : "secondary"}
-            className="text-xs"
+            className="text-xs animate-pulse"
           >
             {scene.enabled ? 'Hoạt động' : 'Tạm dừng'}
           </Badge>
@@ -100,7 +100,7 @@ const SceneCard: React.FC<SceneCardProps> = ({
 
       <CardContent className="space-y-4">
         {/* Scene info */}
-        <div className="flex items-center justify-between text-sm text-slate-600">
+  <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
           <div className="flex items-center space-x-1">
             <Users className="h-3 w-3" />
             <span>{scene.devices || 0} thiết bị</span>
@@ -115,17 +115,17 @@ const SceneCard: React.FC<SceneCardProps> = ({
         <div className="flex space-x-2">
           <Button
             size="sm"
-            className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+            className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white focus:ring-2 focus:ring-purple-400 transition-all duration-200"
             onClick={() => onRun?.(scene.id)}
             disabled={!scene.enabled}
           >
             <Play className="h-3 w-3 mr-1" />
             Chạy kịch bản
           </Button>
-          
           <Button
             size="sm"
             variant="outline"
+            className="transition-all duration-200 hover:bg-purple-100 dark:hover:bg-purple-900/30 focus:ring-2 focus:ring-purple-400"
             onClick={() => onToggle?.(scene.id, !scene.enabled)}
           >
             {scene.enabled ? (

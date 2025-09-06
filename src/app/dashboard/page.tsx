@@ -160,11 +160,11 @@ const DashboardPage = () => {
       {/* Page Header */}
       <div className="mb-8 relative">
         <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-blue-500/10 rounded-3xl blur-xl"></div>
-        <div className="relative bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-blue-500/20 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
-          <div className="flex items-center justify-between">
+        <div className="relative bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-blue-500/20 backdrop-blur-sm rounded-3xl p-6 md:p-8 border border-white/20 shadow-xl animate-fade-in-up">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="animate-fade-in">
-              <h1 className="text-5xl font-bold gradient-text mb-2">🚀 Dashboard</h1>
-              <p className="text-slate-700 text-xl">✨ Quản lý thiết bị thông minh của bạn ✨</p>
+              <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-2">🚀 Dashboard</h1>
+              <p className="text-slate-700 dark:text-slate-200 text-lg md:text-xl">✨ Quản lý thiết bị thông minh của bạn ✨</p>
             </div>
             <div className="flex items-center space-x-3">
               <Button 
@@ -172,10 +172,11 @@ const DashboardPage = () => {
                 size="lg"
                 onClick={handleRefresh}
                 disabled={loading}
-                className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:ring-2 focus:ring-pink-400"
               >
                 <RefreshCw className={`h-5 w-5 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                🔄 Làm mới
+                <span className="hidden sm:inline">🔄 Làm mới</span>
+                <span className="sm:hidden">🔄</span>
               </Button>
             </div>
           </div>
@@ -195,7 +196,7 @@ const DashboardPage = () => {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
         <StatsCard
           title="Tổng thiết bị"
           value={devices.length}
@@ -203,6 +204,7 @@ const DashboardPage = () => {
           icon={Wifi}
           trend={{ value: 12, label: "so với tháng trước" }}
           status="info"
+          className="animate-fade-in-up"
         />
         <StatsCard
           title="Đang hoạt động"
@@ -211,6 +213,7 @@ const DashboardPage = () => {
           icon={Activity}
           trend={{ value: 8, label: "tăng từ hôm qua" }}
           status="success"
+          className="animate-fade-in-up"
         />
         <StatsCard
           title="Kịch bản"
@@ -219,6 +222,7 @@ const DashboardPage = () => {
           icon={Zap}
           trend={{ value: 3, label: "kịch bản mới" }}
           status="warning"
+          className="animate-fade-in-up"
         />
         <StatsCard
           title="Thiết bị chia sẻ"
@@ -226,15 +230,16 @@ const DashboardPage = () => {
           description="Được chia sẻ với người khác"
           icon={Users}
           status="info"
+          className="animate-fade-in-up"
         />
       </div>
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="devices" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="devices">Thiết bị</TabsTrigger>
-          <TabsTrigger value="scenes">Kịch bản</TabsTrigger>
-          <TabsTrigger value="shared">Chia sẻ</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 bg-white/80 dark:bg-slate-900/80 rounded-xl shadow-md mb-2">
+          <TabsTrigger value="devices" className="transition-all duration-200 hover:bg-pink-100 dark:hover:bg-pink-900/30 focus:ring-2 focus:ring-pink-400">Thiết bị</TabsTrigger>
+          <TabsTrigger value="scenes" className="transition-all duration-200 hover:bg-purple-100 dark:hover:bg-purple-900/30 focus:ring-2 focus:ring-purple-400">Kịch bản</TabsTrigger>
+          <TabsTrigger value="shared" className="transition-all duration-200 hover:bg-blue-100 dark:hover:bg-blue-900/30 focus:ring-2 focus:ring-blue-400">Chia sẻ</TabsTrigger>
         </TabsList>
 
         {/* Devices Tab */}
@@ -257,13 +262,15 @@ const DashboardPage = () => {
               </Button>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {devices.map((device) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+              {devices.map((device, idx) => (
                 <DeviceCard
                   key={device.id}
                   device={device}
                   onToggle={handleDeviceToggle}
                   onControl={handleDeviceControl}
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${idx * 60}ms` }}
                 />
               ))}
             </div>
@@ -290,12 +297,14 @@ const DashboardPage = () => {
               </Button>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {scenes.map((scene) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {scenes.map((scene, idx) => (
                 <SceneCard
                   key={scene.id}
                   scene={scene}
                   onRun={handleRunScene}
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${idx * 60}ms` }}
                 />
               ))}
             </div>
@@ -322,13 +331,15 @@ const DashboardPage = () => {
               </Button>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {sharedDevices.map((device) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+              {sharedDevices.map((device, idx) => (
                 <DeviceCard
                   key={device.id}
                   device={device}
                   onToggle={handleDeviceToggle}
                   onControl={handleDeviceControl}
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${idx * 60}ms` }}
                 />
               ))}
             </div>
