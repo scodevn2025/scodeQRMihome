@@ -50,7 +50,7 @@ function generateDeviceId(): string {
   return result;
 }
 
-// Get index data from Xiaomi
+// Get index data from Xiaomi - matches Python _get_index method
 async function getIndexData(deviceId: string): Promise<{
   deviceId: string;
   qs: string;
@@ -58,6 +58,10 @@ async function getIndexData(deviceId: string): Promise<{
   callback: string;
   location: string;
 }> {
+  console.log('🔍 Getting index data from Xiaomi API...');
+  console.log('🔧 Device ID:', deviceId);
+  console.log('🌐 Request URL:', MSG_URL);
+  
   const response = await fetch(MSG_URL, {
     headers: {
       'User-Agent': DEFAULT_UA,
@@ -68,19 +72,78 @@ async function getIndexData(deviceId: string): Promise<{
     }
   });
 
+  console.log('📥 Response status:', response.status, response.statusText);
+  console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()));
+
   if (!response.ok) {
-    throw new Error(`Failed to get index data: ${response.status}`);
+    throw new Error(`Failed to get index data: ${response.status} - ${response.statusText}`);
   }
 
   const text = await response.text();
-  const retData = JSON.parse(text.substring(11)); // Remove callback wrapper
+  console.log('📄 Index response length:', text.length);
+  console.log('📄 Index response preview:', text.substring(0, 200) + '...');
   
-  return {
+  // Parse JSON exactly like Python - ret.text[11:]
+  let retData;
+  try {
+    if (text.startsWith('&&&START&&&')) {
+      retData = JSON.parse(text.substring(11));
+      console.log('✅ Parsed response with &&&START&&& prefix');
+    } else {
+      retData = JSON.parse(text);
+      console.log('✅ Parsed response without prefix');
+    }
+  } catch (parseError) {
+    console.error('❌ Failed to parse JSON response');
+    console.log('📄 Full response:', text);
+    throw new Error('Failed to parse index response');
+  }
+
+  console.log('📊 Index response data:', {
+    code: retData.code,
+    hasQs: !!retData.qs,
+    hasSign: !!retData._sign,
+    hasCallback: !!retData.callback,
+    hasLocation: !!retData.location,
+    description: retData.description || retData.desc
+  });
+
+  // Check if the API returned an error - exactly like Python
+  if (retData.code !== 0) {
+    const errorMsg = retData.description || retData.desc || 'Unknown error';
+    console.error('❌ Xiaomi API returned error:', {
+      code: retData.code,
+      description: errorMsg,
+      result: retData.result
+    });
+    throw new Error(`Xiaomi API error: ${errorMsg} (code: ${retData.code})`);
+  }
+  
+  // Extract required fields - exactly like Python's data.update()
+  const requiredFields = ['qs', '_sign', 'callback', 'location'];
+  const result = { deviceId };
+  
+  for (const field of requiredFields) {
+    if (!(field in retData)) {
+      throw new Error(`Missing required field in response: ${field}`);
+    }
+    (result as any)[field] = retData[field];
+  }
+  
+  console.log('✅ Index data extracted successfully:', {
     deviceId,
-    qs: retData.qs,
-    _sign: retData._sign,
-    callback: retData.callback,
-    location: retData.location
+    qsLength: result.qs?.length,
+    signLength: result._sign?.length,
+    callback: result.callback,
+    locationLength: result.location?.length
+  });
+  
+  return result as {
+    deviceId: string;
+    qs: string;
+    _sign: string;
+    callback: string;
+    location: string;
   };
 }
 
@@ -95,15 +158,18 @@ async function getQRLoginUrl(data: {
   loginUrl: string;
   lpUrl: string;
 }> {
-  // Parse serviceParam from location URL more carefully
+  // Parse serviceParam from location URL - exactly like Python
   let serviceParam = '';
   try {
     const url = new URL(data.location);
     serviceParam = url.searchParams.get('serviceParam') || '';
+    console.log('✅ Extracted serviceParam:', serviceParam?.substring(0, 50) + '...');
   } catch (error) {
-    console.warn('Failed to parse location URL, using empty serviceParam:', error);
+    console.warn('❌ Failed to parse location URL for serviceParam:', error);
+    serviceParam = '';
   }
 
+  // Use exact parameters from Python mijia-api
   const params = new URLSearchParams({
     '_qrsize': '240',
     'qs': data.qs,
@@ -111,16 +177,17 @@ async function getQRLoginUrl(data: {
     'callback': data.callback,
     '_json': 'true',
     'theme': '',
-    'sid': SID,
+    'sid': 'xiaomiio',
     'needTheme': 'false',
     'showActiveX': 'false',
     'serviceParam': serviceParam,
     '_local': 'zh_CN',
     '_sign': data._sign,
-    '_dc': Date.now().toString()
+    '_dc': Date.now().toString(),  // Python uses int(time.time() * 1000) which gives milliseconds
   });
 
-  console.log('QR URL params:', Object.fromEntries(params));
+  console.log('🔗 QR URL params:', Object.fromEntries(params));
+  console.log('🌐 Making QR request to:', `${QR_URL}?${params}`);
 
   const response = await fetch(`${QR_URL}?${params}`, {
     headers: {
@@ -132,29 +199,49 @@ async function getQRLoginUrl(data: {
     }
   });
 
+  console.log('📥 QR Response status:', response.status, response.statusText);
+  console.log('📋 QR Response headers:', Object.fromEntries(response.headers.entries()));
+
   if (!response.ok) {
     throw new Error(`Failed to get QR URL: ${response.status} ${response.statusText}`);
   }
 
   const text = await response.text();
-  console.log('QR URL response:', text.substring(0, 200) + '...');
+  console.log('📥 QR URL response length:', text.length);
+  console.log('📥 QR URL response preview:', text.substring(0, 200) + '...');
   
   let retData;
   try {
-    retData = JSON.parse(text.substring(11));
-  } catch {
-    console.error('Failed to parse QR response:', text);
+    // Python uses ret.text[11:] consistently
+    if (text.startsWith('&&&START&&&')) {
+      retData = JSON.parse(text.substring(11));
+    } else {
+      retData = JSON.parse(text);
+    }
+    console.log('✅ Parsed QR response successfully');
+  } catch (error) {
+    console.error('❌ Failed to parse QR response:', error);
+    console.log('📄 Raw response:', text);
     throw new Error('Invalid response format from QR API');
   }
   
   if (retData.code !== 0) {
-    console.error('QR API error:', retData);
-    throw new Error(`QR URL error: ${retData.desc || 'Unknown error'}`);
+    console.error('❌ QR API error:', retData);
+    throw new Error(`QR URL error: ${retData.desc || retData.description || 'Unknown error'} (code: ${retData.code})`);
   }
+
+  console.log('✅ QR URLs generated:', {
+    hasLoginUrl: !!retData.loginUrl,
+    hasLpUrl: !!retData.lp,
+    loginUrlLength: retData.loginUrl?.length,
+    lpUrlLength: retData.lp?.length,
+    loginUrlPreview: retData.loginUrl?.substring(0, 100) + '...',
+    lpUrlPreview: retData.lp?.substring(0, 100) + '...'
+  });
 
   return {
     loginUrl: retData.loginUrl,
-    lpUrl: (retData as { lp: string }).lp
+    lpUrl: retData.lp
   };
 }
 
@@ -172,10 +259,8 @@ export async function POST() {
     console.log('⏳ Expires at:', new Date(expiresAt).toISOString());
     
     let qrData;
-    let isRealAPI = true;
     
     try {
-      console.log('🌐 Attempting to get real data from Xiaomi API...');
       // Try to get real data from Xiaomi API
       const indexData = await getIndexData(deviceId);
       console.log('✅ Index data retrieved:', {
@@ -190,30 +275,48 @@ export async function POST() {
       console.log('🔗 Login URL length:', qrData.loginUrl?.length);
       console.log('🔗 LP URL length:', qrData.lpUrl?.length);
     } catch (error) {
-      console.warn('❌ Xiaomi API failed, using demo mode');
+      console.log('❌ Real Xiaomi API failed:', error);
       console.error('🔍 Error details:', {
         message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
+        isNetworkError: error instanceof Error && error.message.includes('fetch failed'),
+        isDNSError: error instanceof Error && error.message.includes('ENOTFOUND')
       });
-      isRealAPI = false;
       
-      // Fallback to demo QR code
-      const demoLoginUrl = `mijia://login?qr_id=${qrId}&timestamp=${Date.now()}&demo=true`;
-      qrData = {
-        loginUrl: demoLoginUrl,
-        lpUrl: null
-      };
-      console.log('🎭 Demo QR URL generated:', demoLoginUrl);
+      // Check if this is a network/DNS issue (common in development environments)
+      if (error instanceof Error && (error.message.includes('ENOTFOUND') || error.message.includes('fetch failed'))) {
+        return NextResponse.json({
+          success: false,
+          error: 'Unable to connect to Xiaomi servers. This is likely due to network restrictions or DNS blocking in this environment. For real QR code generation, ensure the server can access account.xiaomi.com',
+          details: {
+            issue: 'Network connectivity to account.xiaomi.com is blocked',
+            solution: 'Configure network/firewall to allow access to Xiaomi domains',
+            note: 'QR codes generated without real Xiaomi API access will not work with MiHome app'
+          }
+        }, { status: 503 });
+      }
+      
+      // Return error for other types of API failures
+      return NextResponse.json({
+        success: false,
+        error: `Unable to generate authentic QR code: ${error instanceof Error ? error.message : 'Xiaomi API unavailable'}`
+      }, { status: 503 });
     }
     
-    // Generate QR code image
+    // Generate QR code image - match Python QRCode settings exactly
     console.log('🎨 Generating QR code image...');
     const qrUrl = await QRCode.toDataURL(qrData.loginUrl, {
-      width: 256,
-      margin: 2,
+      width: 240,
+      margin: 1,  // Python uses border=1
       color: {
         dark: '#000000',
         light: '#FFFFFF'
+      },
+      errorCorrectionLevel: 'M',  // Python QRCode default
+      type: 'image/png',
+      quality: 0.92,
+      rendererOpts: {
+        quality: 0.92
       }
     });
     console.log('✅ QR code image generated, length:', qrUrl.length);
@@ -230,34 +333,9 @@ export async function POST() {
     };
     
     qrSessions.set(qrId, sessionData);
-    console.log('💾 QR session stored:', {
-      qrId,
-      deviceId,
-      hasLoginUrl: !!qrData.loginUrl,
-      hasLpUrl: !!qrData.lpUrl,
-      isRealAPI,
-      sessionCount: qrSessions.size
-    });
     
-    // If demo mode, auto-confirm after 10 seconds
-    if (!isRealAPI) {
-      console.log('🎭 Setting up demo mode auto-confirm in 10 seconds...');
-      setTimeout(() => {
-        const session = qrSessions.get(qrId);
-        if (session && session.status === 'pending') {
-          console.log('🎭 Auto-confirming demo QR session:', qrId);
-          session.status = 'confirmed';
-          session.token = `demo_token_${qrId}`;
-          session.user = {
-            id: 'demo_user',
-            username: 'ScodeVN Demo User',
-            avatar: null
-          };
-          qrSessions.set(qrId, session);
-          console.log('✅ Demo session confirmed successfully');
-        }
-      }, 10000);
-    }
+    console.log('✅ QR code image generated (real API), length:', qrUrl.length);
+    console.log('💾 QR session stored (real API)');
     
     const response = {
       success: true,
@@ -266,7 +344,7 @@ export async function POST() {
         qrId,
         expiresAt,
         loginUrl: qrData.loginUrl,
-        isDemo: !isRealAPI
+        isDemo: false  // Always real API now
       }
     };
     
@@ -290,7 +368,7 @@ export async function POST() {
   }
 }
 
-// Check QR login status by polling the long polling URL
+// Check QR login status by polling the long polling URL - matches Python implementation
 async function checkQRLoginStatus(session: QRSession): Promise<{
   status: 'pending' | 'confirmed' | 'expired';
   token?: string;
@@ -311,6 +389,7 @@ async function checkQRLoginStatus(session: QRSession): Promise<{
     console.log('🔍 Checking QR login status via long polling...');
     console.log('🌐 LP URL:', session.lpUrl);
     
+    // Simple GET request with timeout - exactly like Python
     const response = await fetch(session.lpUrl, {
       method: 'GET',
       headers: {
@@ -319,13 +398,12 @@ async function checkQRLoginStatus(session: QRSession): Promise<{
         'Accept-Encoding': 'gzip, deflate, br, zstd',
         'Accept-Language': 'zh-CN,zh;q=0.9',
         'Cookie': `deviceId=${session.deviceId}; sdkVersion=3.4.1`,
-        'Connection': 'keep-alive'
+        'Connection': 'keep-alive'  // Match Python headers
       },
-      signal: AbortSignal.timeout(10000) // 10 second timeout
+      signal: AbortSignal.timeout(60000) // 60 second timeout like Python
     });
 
     console.log('📥 LP Response status:', response.status);
-    console.log('📥 LP Response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       console.error('❌ QR status check failed:', response.status);
@@ -334,18 +412,22 @@ async function checkQRLoginStatus(session: QRSession): Promise<{
 
     const text = await response.text();
     console.log('📄 LP Response text length:', text.length);
-    console.log('📄 LP Response text preview:', text.substring(0, 200));
+    console.log('📄 LP Response preview:', text.substring(0, 200) + '...');
     
-    // Parse response (remove callback wrapper if present) - same as Python
+    // Parse response - exactly like Python (ret.text[11:])
     let retData;
     try {
-      // Python uses ret.text[11:] to remove callback wrapper
       if (text.startsWith('&&&START&&&')) {
         retData = JSON.parse(text.substring(11));
       } else {
         retData = JSON.parse(text);
       }
-      console.log('✅ Parsed LP response:', retData);
+      console.log('✅ Parsed LP response:', {
+        code: retData.code,
+        hasUserId: !!retData.userId,
+        hasSsecurity: !!retData.ssecurity,
+        hasLocation: !!retData.location
+      });
     } catch (err) {
       console.error('❌ Failed to parse LP response:', err);
       console.log('📄 Raw response:', text);
@@ -353,20 +435,20 @@ async function checkQRLoginStatus(session: QRSession): Promise<{
     }
     
     if (retData.code !== 0) {
-      console.error('❌ QR login failed:', retData.desc || retData.message);
+      console.error('❌ QR login failed:', retData.desc || retData.description || retData.message);
       return { status: 'expired' };
     }
 
-    // Check if login is confirmed - same logic as Python
+    // Check if login is confirmed - exactly like Python
     if (retData.userId && retData.ssecurity && retData.location) {
       console.log('✅ QR login confirmed, getting final auth data...');
       console.log('📊 Auth data:', {
         userId: retData.userId,
         hasSsecurity: !!retData.ssecurity,
-        location: retData.location
+        locationPreview: retData.location?.substring(0, 50) + '...'
       });
       
-      // Get final auth data by following the location redirect - same as Python
+      // Get final auth data by following the location redirect - exactly like Python
       const locationResponse = await fetch(retData.location, {
         headers: {
           'User-Agent': DEFAULT_UA,
@@ -377,31 +459,35 @@ async function checkQRLoginStatus(session: QRSession): Promise<{
         }
       });
 
-      console.log('📥 Final response status:', locationResponse.status);
+      console.log('📥 Location response status:', locationResponse.status);
       
       if (!locationResponse.ok) {
         console.error('❌ Final auth request failed:', locationResponse.status);
         return { status: 'pending' };
       }
 
-      // Extract cookies from the response - same as Python
-      const cookies = locationResponse.headers.get('set-cookie');
-      console.log('🍪 Final auth cookies:', cookies);
+      // Extract cookies from the response - like Python's session.cookies.get_dict()
+      const setCookieHeaders = locationResponse.headers.get('set-cookie');
+      console.log('🍪 Set-Cookie headers:', setCookieHeaders);
       
       const cookieMap: { [key: string]: string } = {};
       
-      if (cookies) {
-        cookies.split(';').forEach(cookie => {
-          const [key, value] = cookie.trim().split('=');
-          if (key && value) {
-            cookieMap[key] = value;
-          }
+      if (setCookieHeaders) {
+        // Parse multiple Set-Cookie headers
+        setCookieHeaders.split(',').forEach(cookieString => {
+          const cookies = cookieString.split(';');
+          cookies.forEach(cookie => {
+            const [key, value] = cookie.trim().split('=');
+            if (key && value) {
+              cookieMap[key] = value;
+            }
+          });
         });
       }
       
-      console.log('🔑 Extracted tokens:', cookieMap);
+      console.log('🔑 Extracted cookies:', Object.keys(cookieMap));
 
-      // Get account info
+      // Get account info - like Python
       let accountInfo: Record<string, unknown> = {};
       try {
         const accountResponse = await fetch(`${ACCOUNT_URL}${retData.userId}`, {
@@ -416,34 +502,51 @@ async function checkQRLoginStatus(session: QRSession): Promise<{
         
         if (accountResponse.ok) {
           const accountText = await accountResponse.text();
-          const accountData = JSON.parse(accountText.substring(11));
-          accountInfo = accountData.data || {};
+          console.log('📊 Account response length:', accountText.length);
+          // Python uses ret.text[11:] for account info too
+          if (accountText.startsWith('&&&START&&&')) {
+            const accountData = JSON.parse(accountText.substring(11));
+            accountInfo = accountData.data || {};
+          } else {
+            const accountData = JSON.parse(accountText);
+            accountInfo = accountData.data || {};
+          }
+          console.log('✅ Account info retrieved:', {
+            hasNickname: !!(accountInfo.nickname),
+            hasAvatar: !!(accountInfo.avatar)
+          });
         }
       } catch (error) {
-        console.warn('Failed to get account info:', error);
+        console.warn('⚠️  Failed to get account info:', error);
       }
+
+      // Build auth data exactly like Python
+      const authData = {
+        userId: retData.userId,
+        ssecurity: retData.ssecurity,
+        deviceId: session.deviceId,
+        serviceToken: cookieMap.serviceToken,
+        cUserId: cookieMap.cUserId,
+        expireTime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
+      };
+
+      console.log('🔑 Final auth data built:', {
+        hasUserId: !!authData.userId,
+        hasSsecurity: !!authData.ssecurity,
+        hasServiceToken: !!authData.serviceToken,
+        hasCUserId: !!authData.cUserId
+      });
 
       return {
         status: 'confirmed',
-        token: retData.ssecurity, // Use ssecurity as token - same as Python
+        token: retData.ssecurity, // Use ssecurity as token - exactly like Python
         user: {
           id: retData.userId,
           username: (accountInfo.nickname as string) || `User_${retData.userId}`,
           avatar: (accountInfo.avatar as string) || null,
           accountInfo
         },
-        authData: {
-          success: true,
-          userId: retData.userId,
-          ssecurity: retData.ssecurity,
-          deviceId: session.deviceId,
-          service_token: cookieMap.serviceToken,
-          security_token: retData.ssecurity,
-          user_id: retData.userId,
-          device_id: session.deviceId,
-          cUserId: cookieMap.cUserId,
-          expireTime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
-        }
+        authData
       };
     }
 

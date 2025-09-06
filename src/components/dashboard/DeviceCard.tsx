@@ -158,9 +158,6 @@ const DeviceCard: React.FC<DeviceCardProps> = ({
                     setLoading(false);
                   }
                 }}
-                    setLoading(false);
-                  }
-                }}
                 disabled={!device.online || loading}
               />
               {loading && <span className="animate-spin h-4 w-4 border-b-2 border-pink-500 rounded-full"></span>}
@@ -209,9 +206,6 @@ const DeviceCard: React.FC<DeviceCardProps> = ({
               } finally {
                 setLoading(false);
               }
-            }}
-              await onControl?.(device.id, {});
-              setTimeout(() => setLoading(false), 500);
             }}
             disabled={!device.online || loading}
           >

@@ -26,6 +26,7 @@ const LoginPage = () => {
   const router = useRouter();
   const { isAuthenticated, login } = useAuthStore();
   const [qrCode, setQrCode] = useState<string>('');
+  const [qrId, setQrId] = useState<string>('');
   const [qrStatus, setQrStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [loginMethod, setLoginMethod] = useState<'qr' | 'credentials'>('qr');
   const [credentials, setCredentials] = useState({
@@ -46,8 +47,11 @@ const LoginPage = () => {
       const response = await apiClient.generateQR();
       if (response.success && response.data?.qrUrl) {
         setQrCode(response.data.qrUrl);
+        setQrId(response.data.qrId || '');
         setQrStatus('idle');
-        checkQRStatus();
+        if (response.data.qrId) {
+          checkQRStatus(response.data.qrId);
+        }
       } else {
         setQrStatus('error');
         toast.error('Không thể tạo mã QR');
@@ -58,9 +62,15 @@ const LoginPage = () => {
     }
   };
 
-  const checkQRStatus = async () => {
+  const checkQRStatus = async (currentQrId?: string) => {
+    const idToCheck = currentQrId || qrId;
+    if (!idToCheck) {
+      console.log('No QR ID available for status check');
+      return;
+    }
+    
     try {
-      const response = await apiClient.checkQRStatus('');
+      const response = await apiClient.checkQRStatus(idToCheck);
       if (response.success) {
         if (response.data?.status === 'confirmed') {
           setQrStatus('success');
@@ -74,7 +84,7 @@ const LoginPage = () => {
           toast.error('Mã QR đã hết hạn');
         } else {
           // Continue checking
-          setTimeout(checkQRStatus, 2000);
+          setTimeout(() => checkQRStatus(idToCheck), 2000);
         }
       }
     } catch {
